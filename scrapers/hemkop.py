@@ -21,6 +21,9 @@ def _parse_offer(item: dict) -> dict:
     # Bygg prissträng från kampanjinfo
     price_str = item.get("price", "")
     condition = ""
+    original_price = ""
+    discount_percentage = 0
+
     if promos:
         promo = promos[0]
         reward = promo.get("rewardLabel", "")
@@ -31,6 +34,31 @@ def _parse_offer(item: dict) -> dict:
             price_str = reward
 
         condition = promo.get("campaignType", "")
+
+        # Originalpris från item.priceNoUnit
+        price_no_unit = item.get("priceNoUnit", "")
+        if price_no_unit:
+            original_price = f"{price_no_unit} kr"
+
+        # Beräkna rabattprocent
+        promo_price = promo.get("price")
+        cond_label = promo.get("conditionLabel", "") or ""
+        if price_no_unit and promo_price is not None:
+            try:
+                orig = float(str(price_no_unit).replace(",", "."))
+                deal = float(promo_price)
+                # Hantera "2 för" erbjudanden
+                import re
+                multi_match = re.search(r'(\d+)\s*för', cond_label)
+                if multi_match:
+                    qty = int(multi_match.group(1))
+                    deal_per_unit = deal / qty
+                else:
+                    deal_per_unit = deal
+                if orig > 0 and deal_per_unit < orig:
+                    discount_percentage = round((1 - deal_per_unit / orig) * 100)
+            except (ValueError, TypeError, ZeroDivisionError):
+                pass
 
     # Bild-URL
     image_url = ""
@@ -52,6 +80,8 @@ def _parse_offer(item: dict) -> dict:
         "image_url": image_url,
         "category": "",
         "restriction": "",
+        "original_price": original_price,
+        "discount_percentage": discount_percentage,
     }
 
 def get_offers() -> list[dict]:

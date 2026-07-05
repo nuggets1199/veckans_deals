@@ -59,10 +59,35 @@ def _parse_offer(offer: dict, store_name: str) -> dict:
     if mechanics.get("value3"):
         price_str += mechanics["value3"]
 
-    # Ordinarie pris
-    regular_price = ""
+    # Ordinarie pris och rabattprocent
+    original_price = ""
+    discount_percentage = 0
     if stores:
-        regular_price = f"Ord.pris {stores[0].get('regularPrice', '')} kr"
+        reg_price_str = stores[0].get("regularPrice", "")
+        if reg_price_str:
+            original_price = f"{reg_price_str} kr"
+            # Beräkna rabattprocent om vi har ett enkelt styckpris (ej "X för Y")
+            quantity = mechanics.get("quantity", 1) or 1
+            try:
+                # Hantera intervall som "67,35" eller "21,71-24,55"
+                reg_val = reg_price_str.replace(",", ".").split("-")[0]
+                orig = float(reg_val)
+                value2 = str(mechanics.get("value2", "")).replace(",", ".")
+                value3 = str(mechanics.get("value3", "")).strip()
+                # value3 kan vara ören (t.ex. value2="11", value3="95" → 11.95)
+                if value3 and value3.isdigit() and not mechanics.get("unitSign"):
+                    deal = float(f"{value2}.{value3}")
+                else:
+                    deal = float(value2)
+                if quantity and int(quantity) > 1:
+                    # "3 för 149" → per-styck deal = 149/3
+                    deal_per_unit = deal / int(quantity)
+                else:
+                    deal_per_unit = deal
+                if orig > 0 and deal_per_unit < orig:
+                    discount_percentage = round((1 - deal_per_unit / orig) * 100)
+            except (ValueError, TypeError, ZeroDivisionError):
+                pass
 
     # Bild-URL
     image_url = ""
@@ -74,11 +99,13 @@ def _parse_offer(offer: dict, store_name: str) -> dict:
         "product": details.get("name", "Okänd produkt"),
         "brand": details.get("brand", ""),
         "price": price_str or "Se butik",
-        "discount": regular_price,
+        "discount": f"Ord.pris {original_price}" if original_price else "",
         "description": details.get("packageInformation", ""),
         "image_url": image_url,
         "category": offer.get("category", {}).get("articleGroupName", ""),
         "restriction": offer.get("restriction", ""),
+        "original_price": original_price,
+        "discount_percentage": discount_percentage,
     }
 
 

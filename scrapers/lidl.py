@@ -86,8 +86,11 @@ def get_offers() -> list[dict]:
             # 4. discount & price & description (packaging)
             price_dict = data_dict.get("price", {})
             price_num = price_dict.get("price") if isinstance(price_dict, dict) else None
+            normal_price_num = price_num  # Spara originalpriset
             
             discount = ""
+            original_price = ""
+            discount_percentage = 0
             lidl_plus = data_dict.get("lidlPlus")
             if lidl_plus and isinstance(lidl_plus, list):
                 discount = "Lidl Plus"
@@ -96,6 +99,36 @@ def get_offers() -> list[dict]:
                     lp_price_dict = lidl_plus[0].get("price", {})
                     price_num = lp_price_dict.get("price")
                     price_dict = lp_price_dict
+                
+                # Extrahera rabattprocent från highlightText (t.ex. "KUPONG -23%")
+                if len(lidl_plus) > 0:
+                    highlight = lidl_plus[0].get("highlightText", "")
+                    pct_match = re.search(r'(\d+)\s*%', highlight)
+                    if pct_match:
+                        discount_percentage = int(pct_match.group(1))
+                    
+                    # Beräkna procent från normal pris vs Lidl Plus-pris om highlight saknas
+                    if discount_percentage == 0 and normal_price_num is not None:
+                        lp_price = lidl_plus[0].get("price", {}).get("price")
+                        if lp_price is not None:
+                            try:
+                                orig = float(normal_price_num)
+                                deal = float(lp_price)
+                                if orig > 0 and deal < orig:
+                                    discount_percentage = round((1 - deal / orig) * 100)
+                            except (ValueError, TypeError, ZeroDivisionError):
+                                pass
+                    
+                    # Sätt originalpris-strängen om vi har ett normalpris
+                    if normal_price_num is not None:
+                        try:
+                            orig_val = float(normal_price_num)
+                            if orig_val.is_integer():
+                                original_price = f"{int(orig_val)}:- kr"
+                            else:
+                                original_price = f"{orig_val:.2f} kr".replace(".", ",")
+                        except (ValueError, TypeError):
+                            pass
                     
             if price_num is not None:
                 try:
@@ -133,7 +166,9 @@ def get_offers() -> list[dict]:
                 "description": description,
                 "image_url": image_url,
                 "category": category,
-                "restriction": restriction
+                "restriction": restriction,
+                "original_price": original_price,
+                "discount_percentage": discount_percentage,
             })
             
     except Exception as e:

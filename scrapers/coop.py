@@ -48,6 +48,7 @@ def _parse_offer(item: dict) -> dict:
     """Konvertera ett Coop-erbjudande till vårt standardformat."""
     content = item.get("content", {})
     us = item.get("unifiedSplash", {})
+    price_info = item.get("priceInformation", {})
 
     # Bygg prissträng från unifiedSplash
     prefix = us.get("prefix", "").strip()
@@ -65,7 +66,7 @@ def _parse_offer(item: dict) -> dict:
         else:
             price_str += value
             # Lägg till :- om värdet bara är siffror och saknar det
-            if value.isdigit():
+            if value.replace(":-", "").replace(",", "").replace(".", "").isdigit() and ":-" not in value:
                 price_str += ":-"
         
         if unit:
@@ -92,6 +93,18 @@ def _parse_offer(item: dict) -> dict:
     if image_url.startswith("//"):
         image_url = f"https:{image_url}"
 
+    # Originalpris och rabattprocent
+    original_price = ""
+    discount_percentage = 0
+    discount_val = price_info.get("discountValue")
+    if discount_val is not None:
+        try:
+            deal_price = float(discount_val)
+            # discountValue i Coop är kampanjpriset, inte rabattbeloppet
+            # Vi kan inte beräkna procent utan originalpris
+        except (ValueError, TypeError):
+            pass
+
     return {
         "store": "Coop",
         "product": content.get("title", "Okänd produkt"),
@@ -101,7 +114,9 @@ def _parse_offer(item: dict) -> dict:
         "description": description,
         "image_url": image_url,
         "category": "",
-        "restriction": ""
+        "restriction": "",
+        "original_price": original_price,
+        "discount_percentage": discount_percentage,
     }
 
 def get_offers() -> list[dict]:
