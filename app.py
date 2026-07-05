@@ -315,7 +315,8 @@ else:
                 price_str = offer.get('price', 'Se pris i butik')
                 
                 # HTML Card
-                card_html = f"""
+                import textwrap
+                card_html = textwrap.dedent(f"""
                 <div class="deal-card">
                     <span class="store-badge store-{store_class}">{store_name}</span>
                     <div class="card-img-container">
@@ -333,6 +334,6 @@ else:
                         </div>
                     </div>
                 </div>
-                """
+                """)
                 st.markdown(card_html, unsafe_allow_html=True)
                 st.write("") # Extra spacer for columns
