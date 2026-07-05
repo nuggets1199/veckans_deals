@@ -299,15 +299,19 @@ else:
             with cols[idx]:
                 # Standardize store names for styling class
                 store_class = offer['store'].lower().replace(" ", "-")
-                
-                # Image placeholder
-                img_url = offer['image_url']
+# Image placeholder
+                img_url = offer.get('image_url', '')
                 if not img_url:
                     img_url = "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=300&q=80"
                 
-                brand_tag = offer['brand'] if offer['brand'] else "&nbsp;"
-                desc_tag = offer['description'] if offer['description'] else "&nbsp;"
-                discount_tag = offer['discount'] if offer['discount'] else ""
+                # Använd .get() med fallback för att undvika KeyError
+                brand_tag = offer.get('brand', '') if offer.get('brand', '') else "&nbsp;"
+                desc_tag = offer.get('description', '') if offer.get('description', '') else "&nbsp;"
+                discount_tag = offer.get('discount', '') if offer.get('discount', '') else ""
+                
+                # Säkra upp övriga variabler i kortet också
+                product_name = offer.get('product', 'Okänd produkt')
+                price_str = offer.get('price', 'Se pris i butik')
                 
                 # HTML Card
                 card_html = f"""
@@ -319,11 +323,11 @@ else:
                     <div class="card-body">
                         <div class="product-info">
                             <span class="product-brand">{brand_tag}</span>
-                            <h3 class="product-title">{offer['product']}</h3>
+                            <h3 class="product-title">{product_name}</h3>
                             <span class="product-desc">{desc_tag}</span>
                         </div>
                         <div class="price-section">
-                            <div class="deal-price">{offer['price']}</div>
+                            <div class="deal-price">{price_str}</div>
                             {f'<div class="deal-discount-badge">{discount_tag}</div>' if discount_tag else ''}
                         </div>
                     </div>
