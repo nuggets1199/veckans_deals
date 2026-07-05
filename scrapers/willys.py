@@ -2,8 +2,8 @@ import requests
 
 
 # Willys butik att hämta erbjudanden för
-# Butiks-ID hittas i URL:en när man väljer butik på willys.se/erbjudanden/butik
-STORE_ID = "2194"
+# Uppsala Björkgatan store code is 2110
+STORE_ID = "2110"
 STORE_NAME = "Willys"
 
 API_URL = "https://www.willys.se/axfood/rest/v1/search/campaigns/offline"
