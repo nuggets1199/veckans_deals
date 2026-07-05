@@ -298,7 +298,8 @@ else:
         for idx, offer in enumerate(chunk):
             with cols[idx]:
                 # Standardize store names for styling class
-                store_class = offer['store'].lower().replace(" ", "-")
+                store_name = offer.get('store', 'Okänd butik')
+                store_class = store_name.lower().replace(" ", "-")
 # Image placeholder
                 img_url = offer.get('image_url', '')
                 if not img_url:
@@ -316,7 +317,7 @@ else:
                 # HTML Card
                 card_html = f"""
                 <div class="deal-card">
-                    <span class="store-badge store-{store_class}">{offer['store']}</span>
+                    <span class="store-badge store-{store_class}">{store_name}</span>
                     <div class="card-img-container">
                         <img class="card-img" src="{img_url}" onerror="this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=300&q=80';">
                     </div>
