@@ -440,28 +440,30 @@ else:
                 price_str = offer.get('price', 'Se pris i butik')
                 
                 # HTML Card
-                import textwrap
-                card_html = textwrap.dedent(f"""
-                <div class="deal-card">
-                    <span class="store-badge store-{store_class}">{store_name}</span>
-                    {pct_badge_html}
-                    <div class="card-img-container">
-                        <img class="card-img" src="{img_url}" onerror="this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=300&q=80';">
-                    </div>
-                    <div class="card-body">
-                        <div class="product-info">
-                            <span class="product-brand">{brand_tag}</span>
-                            <h3 class="product-title">{product_name}</h3>
-                            <span class="product-desc">{desc_tag}</span>
-                        </div>
-                        <div class="price-section">
-                            {orig_price_html}
-                            <div class="deal-price">{price_str}</div>
-                            {f'<div class="deal-discount-badge">{discount_tag}</div>' if discount_tag else ''}
-                        </div>
-                        {restriction_badge}
-                    </div>
-                </div>
-                """)
+                parts = [f'<div class="deal-card">']
+                parts.append(f'<span class="store-badge store-{store_class}">{store_name}</span>')
+                if pct_badge_html:
+                    parts.append(pct_badge_html)
+                parts.append(f'<div class="card-img-container">')
+                parts.append(f'<img class="card-img" src="{img_url}" onerror="this.src=\'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=300&q=80\';">')
+                parts.append('</div>')
+                parts.append('<div class="card-body">')
+                parts.append('<div class="product-info">')
+                parts.append(f'<span class="product-brand">{brand_tag}</span>')
+                parts.append(f'<h3 class="product-title">{product_name}</h3>')
+                parts.append(f'<span class="product-desc">{desc_tag}</span>')
+                parts.append('</div>')
+                parts.append('<div class="price-section">')
+                if orig_price_html:
+                    parts.append(orig_price_html)
+                parts.append(f'<div class="deal-price">{price_str}</div>')
+                if discount_tag:
+                    parts.append(f'<div class="deal-discount-badge">{discount_tag}</div>')
+                parts.append('</div>')
+                if restriction_badge:
+                    parts.append(restriction_badge)
+                parts.append('</div>')
+                parts.append('</div>')
+                card_html = '\n'.join(parts)
                 st.markdown(card_html, unsafe_allow_html=True)
                 st.write("") # Extra spacer for columns
