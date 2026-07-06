@@ -378,7 +378,7 @@ with st.spinner("Hämtar de senaste erbjudandena..."):
 if search_query:
     all_offers = [
         o for o in all_offers
-        if search_query in o.get('product', '').lower() or search_query in o.get('brand', '').lower()
+        if search_query in str(o.get('product') or '').lower() or search_query in str(o.get('brand') or '').lower()
     ]
 
 # Sort offers by discount percentage descending
