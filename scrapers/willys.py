@@ -231,11 +231,13 @@ def search_regular_assortment(query: str) -> list[dict]:
 
 
 def _find_product_list(data, depth=0) -> list:
-    """Rekursivt sök igenom JSON-trädet efter en lista som ser ut som produkter."""
-    if depth > 10:
+    """Rekursivt sök igenom JSON-trädet efter en lista som ser ut som riktiga produkter."""
+    if depth > 15:
         return []
     if isinstance(data, list) and len(data) > 0:
-        if isinstance(data[0], dict) and "name" in data[0]:
+        item = data[0]
+        # Säkerställ att det är en produkt genom att kräva både namn och pris
+        if isinstance(item, dict) and "name" in item and "price" in item:
             return data
     if isinstance(data, dict):
         for key, value in data.items():
