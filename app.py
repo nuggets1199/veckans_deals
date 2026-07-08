@@ -348,12 +348,12 @@ st.markdown("""
 # Sidebar for store filtering
 st.sidebar.header("Välj Butiker")
 
-show_ica_raby = st.sidebar.checkbox("ICA Nära Råbyvägen", value=True)
-show_ica_torg = st.sidebar.checkbox("ICA Supermarket Torgkassen", value=True)
-show_willys = st.sidebar.checkbox("Willys (Björkgatan)", value=True)
-show_hemkop = st.sidebar.checkbox("Hemköp (Svava)", value=True)
-show_coop = st.sidebar.checkbox("Coop (Centralhuset)", value=True)
-show_lidl = st.sidebar.checkbox("Lidl", value=True)
+show_ica_raby = st.sidebar.checkbox("ICA Nära Råbyvägen", value=False)
+show_ica_torg = st.sidebar.checkbox("ICA Supermarket Torgkassen", value=False)
+show_willys = st.sidebar.checkbox("Willys (Björkgatan)", value=False)
+show_hemkop = st.sidebar.checkbox("Hemköp (Svava)", value=False)
+show_coop = st.sidebar.checkbox("Coop (Centralhuset)", value=False)
+show_lidl = st.sidebar.checkbox("Lidl", value=False)
 
 lidl_filter = "Alla Lidl-erbjudanden"
 if show_lidl:
