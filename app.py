@@ -1,5 +1,5 @@
 import streamlit as st
-from scrapers import ica, coop, willys, lidl, hemkop
+from scrapers import ica, coop, willys, lidl, hemkop, willys_search
 import urllib.parse
 import datetime
 import re
@@ -448,7 +448,7 @@ if search_query:
     ]
     # Hämta referenspris från Willys ordinarie sortiment
     try:
-        willys_reference_offers = willys.search_regular_assortment(search_query)
+        willys_reference_offers = willys_search.search_regular_assortment(search_query)
     except Exception as e:
         print(f"Kunde inte hämta Willys referenspriser: {e}")
 
