@@ -369,10 +369,26 @@ search_query = st.text_input("🔍 Sök efter varor (t.ex. kaffe, blandfärs, la
 # Fetch data based on selection
 all_offers = []
 
+# Veckobaserad cache-nyckel – bryts automatiskt varje måndag
+current_year, current_week, _ = datetime.date.today().isocalendar()
+
+@st.cache_data(ttl="7d", max_entries=20, show_spinner=False)
+def fetch_cached_offers(store_name: str, year: int, week: int):
+    if store_name == "ica": return ica.get_offers()
+    if store_name == "willys": return willys.get_offers()
+    if store_name == "hemkop": return hemkop.get_offers()
+    if store_name == "coop": return coop.get_offers()
+    if store_name == "lidl": return lidl.get_offers()
+    return []
+
+@st.cache_data(ttl="7d", max_entries=50, show_spinner=False)
+def fetch_cached_willys_search(query: str, year: int, week: int):
+    return willys_search.search_regular_assortment(query)
+
 with st.spinner("Hämtar de senaste erbjudandena..."):
     # ICA
     if show_ica_raby or show_ica_torg:
-        ica_offers = ica.get_offers()
+        ica_offers = fetch_cached_offers("ica", current_year, current_week)
         if not show_ica_raby:
             ica_offers = [o for o in ica_offers if o['store'] != "ICA Nära Råbyvägen"]
         if not show_ica_torg:
@@ -381,19 +397,19 @@ with st.spinner("Hämtar de senaste erbjudandena..."):
 
     # Willys
     if show_willys:
-        all_offers.extend(willys.get_offers())
+        all_offers.extend(fetch_cached_offers("willys", current_year, current_week))
 
     # Hemköp
     if show_hemkop:
-        all_offers.extend(hemkop.get_offers())
+        all_offers.extend(fetch_cached_offers("hemkop", current_year, current_week))
 
     # Coop
     if show_coop:
-        all_offers.extend(coop.get_offers())
+        all_offers.extend(fetch_cached_offers("coop", current_year, current_week))
 
     # Lidl
     if show_lidl:
-        lidl_offers = lidl.get_offers()
+        lidl_offers = fetch_cached_offers("lidl", current_year, current_week)
         if lidl_filter != "Alla Lidl-erbjudanden":
             today = datetime.date.today()
             # Start of current week (Monday)
@@ -446,9 +462,9 @@ if search_query:
         o for o in all_offers
         if search_query in str(o.get('product') or '').lower() or search_query in str(o.get('brand') or '').lower()
     ]
-    # Hämta referenspris från Willys ordinarie sortiment
+    # Hämta referenspris från Willys ordinarie sortiment (cachad per vecka)
     try:
-        willys_reference_offers = willys_search.search_regular_assortment(search_query)
+        willys_reference_offers = fetch_cached_willys_search(search_query, current_year, current_week)
     except Exception as e:
         print(f"Kunde inte hämta Willys referenspriser: {e}")
 
